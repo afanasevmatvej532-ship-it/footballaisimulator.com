@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Football AI Simulator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6fa;color:#101828;font-family:Inter,Arial,sans-serif}
+header{height:68px;background:#fff;border-bottom:1px solid #e5e9f0;display:flex;align-items:center;position:sticky;top:0;z-index:20}
+.container{max-width:1180px;margin:auto;padding:0 20px}.nav{display:flex;justify-content:space-between;align-items:center;width:100%}
+.logo{font-size:21px;font-weight:950;letter-spacing:-.7px}.logo span{color:#1261ff}.navlinks{display:flex;gap:22px;color:#667085;font-size:13px;font-weight:800}
+.lang{border:1px solid #e2e7ef;background:#fff;border-radius:9px;padding:8px 11px;font-weight:800}
+.hero{text-align:center;background:linear-gradient(#fff,#f6f8fc);padding:66px 20px 48px}.hero h1{font-size:47px;letter-spacing:-2.4px;margin:0 0 13px}.hero h1 span{color:#1261ff}.hero p{max-width:690px;margin:0 auto 26px;color:#667085;line-height:1.6}
+.btn{border:0;border-radius:10px;padding:13px 18px;font-weight:900;cursor:pointer}.primary{background:#1261ff;color:#fff}.secondary{background:#fff;border:1px solid #e1e6ee;color:#344054}
+.categories{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:38px}.category{background:#fff;border:1px solid #e2e7ef;border-radius:18px;padding:24px;text-align:left;cursor:pointer;transition:.2s}.category:hover{transform:translateY(-3px);box-shadow:0 14px 35px #10182812}.caticon{font-size:34px}.category h2{font-size:21px;margin:13px 0 7px}.category p{font-size:13px;line-height:1.55;color:#667085;margin:0 0 17px}.tag{display:inline-block;background:#eef4ff;color:#1555d6;padding:6px 9px;border-radius:7px;font-size:11px;font-weight:900}
+.info{padding:40px 0}.info h2{text-align:center}.info p{text-align:center;color:#667085}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.infoCard{background:#fff;border:1px solid #e5e9ef;border-radius:14px;padding:18px}.infoCard b{display:block;font-size:24px}.infoCard span{color:#667085;font-size:12px}
+footer{text-align:center;color:#98a2b3;font-size:11px;padding:35px;border-top:1px solid #e5e9ef}
+
+#app{display:none;min-height:100vh;background:#071326;color:#fff}.appbar{height:64px;background:#08182d;border-bottom:1px solid #203651;display:flex;align-items:center}.appnav{display:flex;align-items:center;justify-content:space-between}.back{color:#9bacbf;font-weight:800;cursor:pointer}.apptitle{font-weight:950}.appmain{padding:25px 0 45px}
+.modeHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.modeHead h1{margin:0;font-size:26px}.modeHead p{color:#879ab2;font-size:12px;margin:5px 0 0}
+.aiBadge{background:#123363;color:#72a0ff;border:1px solid #28508b;padding:8px 11px;border-radius:9px;font-size:11px;font-weight:900}
+.aiBox{background:#0b1c31;border:1px solid #203a58;border-radius:15px;padding:18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:15px}.aiBox b{font-size:16px}.aiBox p{margin:6px 0 0;color:#8da0b8;font-size:12px;line-height:1.5}
+.pool{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.item{background:#0d2036;border:1px solid #24415e;border-radius:11px;padding:10px;display:flex;align-items:center;gap:9px}.ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1d58cc,#76a7ff);font-size:11px;font-weight:950}.item small{display:block;color:#8195ad;margin-top:2px}
+.loading{padding:30px;text-align:center;color:#8fa2ba;background:#0b1c31;border:1px solid #203a58;border-radius:15px}
+.bracket{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;overflow:auto}.round{min-width:170px}.round h3{text-align:center;color:#6e9cff;font-size:11px}.match{background:#0d2138;border:1px solid #27435e;border-radius:10px;padding:7px;margin:8px 0;font-size:11px}.match div{padding:6px;border-radius:6px}.match .winner{background:#17457f;font-weight:900}.result{margin-top:18px;text-align:center;background:#0b1c31;border:1px solid #203a58;border-radius:15px;padding:18px}.champ{font-size:28px;font-weight:1000;color:#6fa0ff;margin-top:5px}.hidden{display:none!important}
+.finalBtn{margin-top:14px}.modeTabs{display:flex;gap:8px;margin-bottom:17px;overflow:auto}.modeTabs button{white-space:nowrap}
+@media(max-width:800px){.navlinks{display:none}.hero h1{font-size:36px}.categories,.cards{grid-template-columns:1fr}.pool{grid-template-columns:repeat(2,1fr)}.modeHead{align-items:flex-start;flex-direction:column}.aiBox{align-items:flex-start;flex-direction:column}}
+</style>
+
+<style id="result-highlight-styles">
+.match.winner-card { border-color:#22c55e !important; background:rgba(34,197,94,.12) !important; box-shadow:0 0 0 2px rgba(34,197,94,.18), 0 8px 24px rgba(34,197,94,.12); }
+.match.loser-card { border-color:#ef4444 !important; background:rgba(239,68,68,.10) !important; opacity:.9; }
+.participant.winner { border-color:#22c55e !important; background:rgba(34,197,94,.14) !important; color:#15803d !important; }
+.participant.loser { border-color:#ef4444 !important; background:rgba(239,68,68,.10) !important; color:#b91c1c !important; }
+.result-win { color:#16a34a !important; font-weight:900; }
+.result-loss { color:#dc2626 !important; font-weight:900; }
+</style>
+
+
+<style id="result-highlight-styles-v3">
+.match-team{display:block;padding:10px 12px;border-radius:8px;margin:4px 0;font-weight:800}
+.winner-row{background:rgba(34,197,94,.18);border:1px solid #22c55e;color:#15803d}
+.loser-row{background:rgba(239,68,68,.14);border:1px solid #ef4444;color:#b91c1c}
+</style>
+
+
+<style id="winner-fix">
+.match-team.winner-row{
+  background:rgba(34,197,94,.18)!important;
+  border:1px solid #22c55e!important;
+  color:#15803d!important;
+}
+.match-team.loser-row{
+  background:rgba(239,68,68,.14)!important;
+  border:1px solid #ef4444!important;
+  color:#b91c1c!important;
+}
+</style>
+
+
+<style id="simulation-modes-style">
+.mode-selector{margin:14px 0;padding:14px;border:1px solid #dbe4ee;border-radius:14px;background:#fff}
+.mode-title{font-weight:900;margin-bottom:10px}
+.mode-option{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #e2e8f0;border-radius:10px;margin-top:8px;cursor:pointer}
+.mode-option.active{border-color:#60a5fa;background:#eff6ff}
+.mode-option input{accent-color:#2563eb}
+.mode-option span{display:flex;flex-direction:column;gap:2px;color:#000}
+.mode-option small{color:#000;font-size:11px}
+</style>
+
+
+<style id="continue-round-style">
+.continue-box{margin:18px auto;padding:18px;max-width:430px;text-align:center;border:1px solid #dbe4ee;border-radius:14px;background:#fff}
+.continue-title{font-size:13px;color:#64748b;margin-bottom:7px}
+.continue-question{font-size:19px;font-weight:900;color:#000;margin:8px 0 14px}
+.continue-actions{display:flex;gap:10px;justify-content:center}
+.continue-actions button,#resumeSim{min-width:100px;padding:11px 20px;border:0;border-radius:10px;font-weight:900;cursor:pointer}
+.continue-actions button:first-child,#resumeSim{background:#16a34a;color:#fff}
+.continue-actions button:last-child{background:#ef4444;color:#fff}
+</style>
+
+
+<style id="calc-mode-style">
+.calc-mode{margin:14px 0;padding:14px;border:1px solid #dbe4ee;border-radius:14px;background:#fff}
+.calc-mode-title{font-weight:900;color:#000;margin-bottom:10px}
+.calc-option{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #e2e8f0;border-radius:10px;margin-top:8px;cursor:pointer;color:#000}
+.calc-option.active{border-color:#60a5fa;background:#eff6ff}
+.calc-option input{accent-color:#2563eb}
+.calc-option span{display:flex;flex-direction:column;gap:2px;color:#000}
+.calc-option small{color:#000;font-size:11px}
+</style>
+
+<meta name="description" content="Football AI Simulator — интерактивный симулятор Лиги чемпионов, Чемпионата мира и Золотого мяча. 32 участника и выбор победителей ИИ.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0b1220">
+<meta property="og:title" content="Football AI Simulator">
+<meta property="og:description" content="Симулятор футбольных турниров с выбором победителей ИИ.">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Football AI Simulator","applicationCategory":"GameApplication","operatingSystem":"Web","description":"Интерактивный симулятор футбольных турниров."}</script>
+</head>
+<body>
+<div id="home">
+<header><div class="container nav"><div class="logo">Football <span>AI Simulator</span></div><div class="navlinks"><span>Турниры</span><span>AI Selection</span><span>Симуляция</span></div><button class="lang">RU</button></div></header>
+<section class="hero"><div class="container">
+<h1>Три футбольных турнира.<br><span>Один AI Simulator.</span></h1>
+<p>Выбирай режим, а искусственный интеллект сам сформирует 32 участника и проведёт турнир от первого раунда до финала.</p>
+<button class="btn primary" onclick="openMode('ucl')">⚽ Открыть симулятор</button>
+<div class="categories">
+<div class="category" onclick="openMode('ucl')"><div class="caticon">🏆</div><h2>Лига чемпионов</h2><p>32 клуба. AI выбирает участников и создаёт случайную сетку плей-офф.</p><span class="tag">32 КОМАНДЫ</span></div>
+<div class="category" onclick="openMode('world')"><div class="caticon">🌍</div><h2>Чемпионат мира</h2><p>32 сборные. AI формирует состав участников и запускает чемпионат.</p><span class="tag">32 СБОРНЫЕ</span></div>
+<div class="category" onclick="openMode('ballon')"><div class="caticon">🥇</div><h2>Золотой мяч</h2><p>32 лучших игрока. AI оценивает сезон по игре, статистике, большим матчам и трофеям.</p><span class="tag">32 ИГРОКА</span></div>
+</div></div></section>
+<section class="info"><div class="container"><h2>AI выбирает участников</h2><p>Не нужно вручную собирать сетку.</p><div class="cards">
+<div class="infoCard"><b>32</b><span>участника в каждом режиме</span></div><div class="infoCard"><b>5</b><span>раундов до финала</span></div><div class="infoCard"><b>AI</b><span>автоматический выбор и симуляция</span></div>
+</div></div></section>
+<footer>Football AI Simulator · интерактивный фанатский проект</footer>
+</div>
+
+<div id="app">
+<div class="appbar"><div class="container appnav"><div class="back" onclick="goHome()">← Главная</div><div class="apptitle">Football AI Simulator</div><div style="width:65px"></div></div></div>
+<div class="appmain"><div class="container">
+<div class="modeTabs">
+<button class="btn secondary" onclick="openMode('ucl')">🏆 Лига чемпионов</button>
+<button class="btn secondary" onclick="openMode('world')">🌍 Чемпионат мира</button>
+<button class="btn secondary" onclick="openMode('ballon')">🥇 Золотой мяч</button>
+</div>
+<div class="modeHead"><div><h1 id="modeTitle"></h1><p id="modeSub"></p></div><div class="aiBadge">🤖 AI SELECTION</div></div>
+<div class="aiBox"><div><b id="aiTitle">AI готов выбрать участников</b><p id="aiText">Нажми кнопку — AI сформирует 32 участника, после чего можно будет запустить турнир.</p></div><button class="btn primary" onclick="aiSelect()">🤖 Выбрать 32 AI</button></div>
+<div id="pool"></div>
+
+<div class="mode-selector" id="modeSelector">
+  <div class="mode-title">Режим симуляции</div>
+  <label class="mode-option active">
+    <input type="radio" name="simMode" value="random" checked>
+    <span><b>🎲 Всё на рандом</b><small>Победитель определяется случайно</small></span>
+  </label>
+  <label class="mode-option">
+    <input type="radio" name="simMode" value="strength">
+    <span><b>⚡ По силе</b><small>Шансы зависят от силы команды или игрока</small></span>
+  </label>
+</div>
+
+
+<div class="calc-mode" id="calcMode">
+  <div class="calc-mode-title">Режим расчёта</div>
+  <label class="calc-option active">
+    <input type="radio" name="calcModeChoice" value="auto" checked>
+    <span><b>Рассчитывать всё</b><small>Все раунды рассчитываются автоматически</small></span>
+  </label>
+  <label class="calc-option">
+    <input type="radio" name="calcModeChoice" value="confirm">
+    <span><b>Рассчитывать по согласию</b><small>После каждого раунда будет вопрос о продолжении</small></span>
+  </label>
+</div>
+
+<div id="tournament" class="hidden"></div>
+</div></div>
+</div>
+
+<script>
+const data={
+ucl:{title:"Лига чемпионов",sub:"32 клуба · AI выбирает участников · плей-офф",type:"клуба",names:["Реал Мадрид","Барселона","Манчестер Сити","Ливерпуль","Арсенал","Бавария","ПСЖ","Интер","Милан","Атлетико Мадрид","Боруссия Дортмунд","Челси","Манчестер Юнайтед","Ювентус","Наполи","Байер","Бенфика","Порту","Спортинг","Аякс","Тоттенхэм","Астон Вилла","Ньюкасл","Марсель","Монако","Галатасарай","Фейеноорд","ПСВ","Аталанта","Вильярреал","Севилья","Лейпциг"]},
+world:{title:"Чемпионат мира",sub:"32 сборные · AI выбирает участников · плей-офф",type:"сборных",names:["Аргентина","Франция","Испания","Бразилия","Англия","Португалия","Германия","Нидерланды","Италия","Бельгия","Хорватия","Уругвай","Колумбия","Марокко","Япония","США","Мексика","Швейцария","Дания","Сенегал","Эквадор","Южная Корея","Иран","Сербия","Турция","Австрия","Норвегия","Канада","Польша","Украина","Египет","Нигерия"]},
+ballon:{title:"Золотой мяч",sub:"32 игрока · AI оценивает сезон · плей-офф",type:"игроков",names:["Месси","Мбаппе","Ламин Ямаль","Дембеле","Холанд","Винисиус","Беллингем","Кейн","Палмер","Олисе","Витинья","Хакими","Родри","Лаутаро","Вирц","Райс","Нуну Мендеш","Кварацхелия","Луис Диас","Бруну Фернандеш","Жоау Невеш","Салиба","Фабиан Руис","Маркиньос","Пачо","Упамекано","Ферран Торрес","Хулиан Альварес","Пау Кубарси","Кукурелья","Рафаэл Леау","Гризманн"]}
+};
+let mode='ucl',participants=[],rounds=[],running=false;
+function openMode(m){mode=m;home.style.display='none';app.style.display='block';window.scrollTo(0,0);setMode();aiSelect()}
+function goHome(){app.style.display='none';home.style.display='block';window.scrollTo(0,0)}
+function setMode(){let d=data[mode];modeTitle.textContent=d.title;modeSub.textContent=d.sub;aiTitle.textContent='AI выбирает 32 '+d.type;aiText.textContent=mode==='ballon'?'AI учитывает качество игры, статистику, большие матчи, трофеи и стабильность.':'AI выбирает сильнейших участников из пула и затем создаёт случайную сетку.'}
+function aiSelect(){
+ let names=[...data[mode].names].sort(()=>Math.random()-.5);participants=names.slice(0,32);
+ pool.innerHTML='<div class="pool">'+participants.map((x,i)=>'<div class="item"><div class="ico">'+(i+1)+'</div><div><b>'+x+'</b><small>AI selection</small></div></div>').join('')+'</div><div style="text-align:center;margin-top:16px"><button class="btn primary" onclick="startTournament()">⚡ Запустить турнир</button></div>';
+ tournament.classList.add('hidden');aiText.textContent='AI сформировал 32 участника. Состав готов к турниру.';
+}
+function strength(x){let h=0;for(let i=0;i<x.length;i++)h=(h+x.charCodeAt(i)*(i+3))%1000;return h}
+function pick(a,b){let sa=strength(a),sb=strength(b);return Math.random()<(0.46+(sa-sb)/3000)?a:b}
+function startTournament(){
+ let cur=[...participants].sort(()=>Math.random()-.5);
+ rounds=[cur];
+ matchResults=[];
+ currentRoundIndex=0;
+ nextRoundTeams=cur;
+ tournament.classList.remove('hidden');
+ runNextRound();
+}
+
+function runNextRound(){
+ const cur=[...nextRoundTeams];
+ if(cur.length===1){
+   showChampion(cur[0]);
+   return;
+ }
+
+ let next=[], matches=[];
+ for(let i=0;i<cur.length;i+=2){
+   let a=cur[i], b=cur[i+1], winner=pick(a,b), loser=winner===a?b:a;
+   matches.push({a,b,winner,loser});
+   next.push(winner);
+ }
+ const labels=['1/16','1/8','1/4','Полуфинал','Финал'];
+ const label=labels[currentRoundIndex] || ('Раунд '+(currentRoundIndex+1));
+ matchResults.push({label,matches});
+ nextRoundTeams=next;
+ currentRoundIndex++;
+ renderBracket();
+ if(calculationMode==='confirm'){
+   showContinueQuestion(label);
+ } else {
+   setTimeout(runNextRound, 350);
+ }
+}
+
+function renderBracket(){
+ tournament.innerHTML='<h2 style="margin:18px 0 10px">Сетка турнира</h2><div class="bracket">'+
+ matchResults.map(r=>'<div class="round"><h3>'+r.label+'</h3>'+
+ r.matches.map(m=>'<div class="match">'+
+ '<div class="match-team '+(m.a === m.winner ? 'winner-row' : 'loser-row')+'"><span>'+m.a+'</span></div>'+
+ '<div class="match-team '+(m.b === m.winner ? 'winner-row' : 'loser-row')+'"><span>'+m.b+'</span></div>'+
+ '</div>').join('')+'</div>').join('')+'</div>';
+}
+
+function showContinueQuestion(label){
+ tournament.innerHTML += '<div class="continue-box" id="continueBox">'+
+ '<div class="continue-title">Раунд «'+label+'» завершён</div>'+
+ '<div class="continue-question">Рассчитывать следующий раунд?</div>'+
+ '<div class="continue-actions">'+
+ '<button type="button" id="continueYes">Да</button>'+
+ '<button type="button" id="continueNo">Нет</button>'+
+ '</div></div>';
+
+ document.getElementById('continueYes').addEventListener('click',()=>{
+   document.getElementById('continueBox')?.remove();
+   runNextRound();
+ });
+ document.getElementById('continueNo').addEventListener('click',()=>{
+   document.getElementById('continueBox').innerHTML=
+     '<div class="continue-question">Симуляция остановлена</div>'+
+     '<button type="button" id="resumeSim">Продолжить</button>';
+   document.getElementById('resumeSim').addEventListener('click',()=>{
+     document.getElementById('continueBox')?.remove();
+     runNextRound();
+   });
+ });
+}
+
+function showChampion(winner){
+ tournament.innerHTML+='<div class="result"><div style="color:#8da0b8;font-size:12px">AI ФИНАЛ</div><div style="color:#16a34a;font-weight:900;font-size:18px;margin:8px 0 4px">ПОБЕДИТЕЛЬ</div><div class="champ">🏆 '+winner+'</div><div style="color:#8da0b8;font-size:12px;margin-top:5px">Победитель турнира по версии AI Simulator</div></div>';
+}
+setMode();
+</script>
+
+
+<script id="simulation-mode-logic">
+(function(){
+  const root=document;
+  function syncMode(){
+    const selected=root.querySelector('input[name="simMode"]:checked');
+    if(!selected) return;
+    simMode=selected.value;
+    root.querySelectorAll('.mode-option').forEach(x=>x.classList.toggle('active', x.querySelector('input')===selected));
+  }
+  root.querySelectorAll('input[name="simMode"]').forEach(x=>x.addEventListener('change',syncMode));
+  syncMode();
+})();
+</script>
+
+
+<script id="calc-mode-logic">
+(function(){
+  function syncCalcMode(){
+    const selected=document.querySelector('input[name="calcModeChoice"]:checked');
+    if(!selected) return;
+    calculationMode=selected.value;
+    document.querySelectorAll('.calc-option').forEach(el=>{
+      el.classList.toggle('active', el.querySelector('input')===selected);
+    });
+  }
+  document.querySelectorAll('input[name="calcModeChoice"]').forEach(el=>{
+    el.addEventListener('change',syncCalcMode);
+  });
+  syncCalcMode();
+})();
+</script>
+
+</body>
+</html>
